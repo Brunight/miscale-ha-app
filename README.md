@@ -49,8 +49,7 @@ Every phone reads the same data, so they reach the same answer without talking t
 3. After the first weigh-in, the main screen shows the scale's address. Put it in
    Settings to ignore other scales nearby (optional).
 
-To pre-fill the HA URL on every phone, copy `.env.example` to `.env` and set
-`EXPO_PUBLIC_HA_URL` before building. It's read at build time, so rebuild after changing it.
+The HA URL is pre-filled from `EXPO_PUBLIC_HA_URL` (see [Releasing](#releasing)).
 
 `mobile_app` must be loaded in HA; it is when `default_config:` is in your configuration.
 Plain `http://` URLs are allowed. Prefer the server's IP address to `homeassistant.local`,
@@ -69,7 +68,24 @@ bun run typecheck
 bun run lint
 ```
 
-Without a local Android SDK, build in the cloud with `bunx eas-cli build -p android --profile development`.
+### Releasing
+
+The app is on EAS (`@brunight/miscale-ha-app`), which also holds the Android signing key.
+
+```bash
+bun run build:apk                 # APK built on this machine with the EAS key → ../miscale-ha-app-apks/miscale.apk
+bun run update -m "what changed"  # over-the-air update of the JS for every installed phone
+```
+
+- **JS-only changes** (screens, logic, styles) go out with `bun run update`. Phones download it on
+  launch and use it from the next launch.
+- **Native changes** (new native libraries, `app.json` plugins, permissions, Expo SDK) need a new
+  APK. The runtime version is a fingerprint of the native code, so an update is never sent to an
+  APK it doesn't match; a stale phone just keeps its current version until the new APK is installed.
+- `EXPO_PUBLIC_HA_URL` for builds and updates is an EAS environment variable
+  (`bunx eas-cli env:list production`); `.env` is only used by `bun run start`.
+- Building needs `ANDROID_HOME=~/Android/Sdk` and a JDK 21 `JAVA_HOME`. Without a local SDK, drop
+  `--local` to build in EAS's cloud.
 
 The `android/` folder is generated (`expo prebuild`) and not committed; native settings
 live in `app.json`.

@@ -42,6 +42,18 @@
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "runtimeVersion": {
+      "policy": "fingerprint"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "2389f49d-b4e3-41a8-92bb-41b9b9cee17e"
+      }
+    },
+    "owner": "brunight",
+    "updates": {
+      "url": "https://u.expo.dev/2389f49d-b4e3-41a8-92bb-41b9b9cee17e"
     }
   }
 }

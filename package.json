@@ -15,6 +15,7 @@
     "expo-secure-store": "~58.0.2",
     "expo-status-bar": "~58.0.3",
     "expo-system-ui": "~58.0.6",
+    "expo-updates": "~58.0.17",
     "nativewind": "4.2.7",
     "react": "19.3.0",
     "react-native": "0.88.0",
@@ -40,7 +41,8 @@
     "test": "bun test",
     "typecheck": "tsc --noEmit",
     "lint": "expo lint",
-    "build:apk": "expo prebuild -p android --no-install && cd android && ./gradlew assembleRelease"
+    "build:apk": "eas build -p android --profile production --local --output ../miscale-ha-app-apks/miscale.apk",
+    "update": "eas update --channel production --environment production --platform android"
   },
   "private": true
 }
