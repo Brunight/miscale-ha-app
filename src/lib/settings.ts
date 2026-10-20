@@ -25,7 +25,8 @@ const KEY = "miscale.settings";
 
 export function emptySettings(): Settings {
   return {
-    haUrl: "",
+    // Set EXPO_PUBLIC_HA_URL in .env to pre-fill it (read at build time).
+    haUrl: process.env.EXPO_PUBLIC_HA_URL ?? "",
     token: "",
     name: "",
     heightCm: 170,

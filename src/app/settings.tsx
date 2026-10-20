@@ -2,7 +2,8 @@ import * as Application from "expo-application";
 import * as Device from "expo-device";
 import { router } from "expo-router";
 import { useState } from "react";
-import { Pressable, ScrollView, Switch, Text, TextInput, View } from "react-native";
+import { Pressable, ScrollView, Switch, Text, TextInput, useColorScheme, View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { useSettings } from "@/hooks/useSettings";
 import { HomeAssistant, isGone, normalizeUrl } from "@/lib/ha";
@@ -16,7 +17,8 @@ export default function SettingsScreen() {
   const [height, setHeight] = useState(String(form.heightCm));
   const [tolerance, setTolerance] = useState(String(form.toleranceKg));
   const [busy, setBusy] = useState(false);
-  const [message, setMessage] = useState<string | null>(null);
+  const [message, setMessage] = useState<{ text: string; error: boolean } | null>(null);
+  const insets = useSafeAreaInsets();
 
   const set = <K extends keyof Settings>(key: K, value: Settings[K]) => setForm((f) => ({ ...f, [key]: value }));
 
@@ -45,10 +47,10 @@ export default function SettingsScreen() {
                 : s.scaleAddress && !MAC.test(s.scaleAddress)
                   ? "Scale address must look like AA:BB:CC:DD:EE:FF"
                   : null;
-    if (problem) return setMessage(problem);
+    if (problem) return setMessage({ text: problem, error: true });
 
     setBusy(true);
-    setMessage("Connecting to Home Assistant…");
+    setMessage({ text: "Connecting to Home Assistant…", error: false });
     try {
       const ha = new HomeAssistant(s.haUrl, s.token);
       await ha.ping();
@@ -74,15 +76,19 @@ export default function SettingsScreen() {
       await save(s);
       router.replace("/");
     } catch (e) {
-      setMessage(`Couldn't connect: ${e instanceof Error ? e.message : String(e)}`);
+      setMessage({ text: `Couldn't connect: ${e instanceof Error ? e.message : String(e)}`, error: true });
     } finally {
       setBusy(false);
     }
   }
 
   return (
-    <ScrollView contentContainerClassName="gap-3 bg-white p-5" keyboardShouldPersistTaps="handled">
-      <Text className="mt-2 text-xl font-bold">Home Assistant</Text>
+    <ScrollView
+      className="bg-white dark:bg-neutral-950"
+      contentContainerClassName="gap-3 p-5"
+      keyboardShouldPersistTaps="handled"
+    >
+      <Text className="mt-2 text-xl font-bold text-neutral-900 dark:text-neutral-100">Home Assistant</Text>
       <Field label="URL" value={form.haUrl} onChange={(v) => set("haUrl", v)} placeholder="http://homeassistant.local:8123" url />
       <Field
         label="Long-lived access token"
@@ -92,16 +98,22 @@ export default function SettingsScreen() {
         secret
       />
 
-      <Text className="mt-2 text-xl font-bold">You</Text>
+      <Text className="mt-2 text-xl font-bold text-neutral-900 dark:text-neutral-100">You</Text>
       <Field label="Name" value={form.name} onChange={(v) => set("name", v)} />
       <Field label="Height (cm)" value={height} onChange={setHeight} numeric />
-      <Field label="Birth date" value={form.birth} onChange={(v) => set("birth", v)} placeholder="1990-01-31" />
+      <Field
+        label="Birth date"
+        hint="Year-month-day, e.g. 1990-01-31"
+        value={form.birth}
+        onChange={(v) => set("birth", v)}
+        placeholder="YYYY-MM-DD"
+      />
       <View className="flex-row items-center justify-between">
-        <Text className="text-[15px] text-neutral-700">Sex for the formulas: {form.male ? "male" : "female"}</Text>
+        <Text className="text-[15px] text-neutral-700 dark:text-neutral-300">Sex for the formulas: {form.male ? "male" : "female"}</Text>
         <Switch value={form.male} onValueChange={(v) => set("male", v)} />
       </View>
 
-      <Text className="mt-2 text-xl font-bold">Scale</Text>
+      <Text className="mt-2 text-xl font-bold text-neutral-900 dark:text-neutral-100">Scale</Text>
       <Field
         label="Scale address (optional)"
         hint="Only accept this scale. Shown on the main screen after a weigh-in."
@@ -117,10 +129,16 @@ export default function SettingsScreen() {
         numeric
       />
 
-      {message && <Text className="text-[15px] text-red-600">{message}</Text>}
+      {message && (
+        <Text className={`text-[15px] ${message.error ? "text-red-600 dark:text-red-400" : "text-neutral-600 dark:text-neutral-400"}`}>
+          {message.text}
+        </Text>
+      )}
       <Pressable onPress={onSave} disabled={busy} className={`mt-2 items-center rounded-lg bg-[#0a66c2] p-3.5 ${busy ? "opacity-60" : ""}`}>
         <Text className="text-[17px] font-semibold text-white">{busy ? "Connecting…" : "Save"}</Text>
       </Pressable>
+      {/* Keeps the button above Android's navigation bar (the app draws edge to edge). */}
+      <View style={{ height: insets.bottom }} />
     </ScrollView>
   );
 }
@@ -135,11 +153,13 @@ function Field(props: {
   secret?: boolean;
   url?: boolean;
 }) {
+  const dark = useColorScheme() === "dark";
   return (
     <View className="gap-1">
-      <Text className="text-[15px] text-neutral-700">{props.label}</Text>
+      <Text className="text-[15px] text-neutral-700 dark:text-neutral-300">{props.label}</Text>
       <TextInput
-        className="rounded-lg border border-neutral-300 px-3 py-2.5 text-base"
+        className="rounded-lg border border-neutral-300 px-3 py-2.5 text-base text-neutral-900 dark:border-neutral-700 dark:text-neutral-100"
+        placeholderTextColor={dark ? "#737373" : "#a3a3a3"}
         value={props.value}
         onChangeText={props.onChange}
         placeholder={props.placeholder}
@@ -148,7 +168,7 @@ function Field(props: {
         autoCapitalize="none"
         autoCorrect={false}
       />
-      {props.hint && <Text className="text-[13px] text-neutral-500">{props.hint}</Text>}
+      {props.hint && <Text className="text-[13px] text-neutral-500 dark:text-neutral-400">{props.hint}</Text>}
     </View>
   );
 }

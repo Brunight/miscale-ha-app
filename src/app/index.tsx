@@ -1,5 +1,6 @@
 import { Link, Redirect, Stack } from "expo-router";
 import { ActivityIndicator, Pressable, Text, View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { useScale, type ScanStatus } from "@/hooks/useScale";
 import { useSettings } from "@/hooks/useSettings";
@@ -26,29 +27,30 @@ const STATUS_TEXT: Record<ScanStatus, string> = {
 function Weigh({ settings }: { settings: Settings & { registration: Registration } }) {
   const { state, onEvent, confirm, discard } = useWeighIn(settings);
   const { status, error, live } = useScale(settings.scaleAddress, onEvent);
+  const insets = useSafeAreaInsets();
 
   // While the scale settles, show its live weight; afterwards, the measurement's.
   const settling = live && !live.stabilized && !live.removed;
   const weight = settling ? live.weightKg : "m" in state ? state.m.weightKg : null;
 
   return (
-    <View className="flex-1 items-center gap-3 bg-white p-6">
+    <View className="flex-1 items-center gap-3 bg-white p-6 dark:bg-neutral-950" style={{ paddingBottom: insets.bottom + 24 }}>
       <Stack.Screen
         options={{
           headerRight: () => (
             <Link href="/settings" asChild>
               <Pressable>
-                <Text className="text-base text-[#0a66c2]">Settings</Text>
+                <Text className="text-base text-[#0a66c2] dark:text-sky-400">Settings</Text>
               </Pressable>
             </Link>
           ),
         }}
       />
-      <Text className="text-lg text-neutral-600">{settings.name}</Text>
-      <Text className={`text-7xl font-bold tabular-nums ${settling ? "text-neutral-400" : ""}`}>{weight != null ? `${weight.toFixed(1)} kg` : "–"}</Text>
+      <Text className="text-lg text-neutral-600 dark:text-neutral-400">{settings.name}</Text>
+      <Text className={`text-7xl font-bold tabular-nums ${settling ? "text-neutral-400 dark:text-neutral-500" : "text-neutral-900 dark:text-neutral-50"}`}>{weight != null ? `${weight.toFixed(1)} kg` : "–"}</Text>
       <PhaseView state={state} status={status} error={error} settling={Boolean(settling)} confirm={confirm} discard={discard} />
       {"metrics" in state && <MetricsTable metrics={state.metrics} impedance={state.m.impedance} />}
-      {live && !settings.scaleAddress && <Text className="mt-2 text-center text-neutral-500">Scale address: {live.address}</Text>}
+      {live && !settings.scaleAddress && <Text className="mt-2 text-center text-neutral-500 dark:text-neutral-400">Scale address: {live.address}</Text>}
     </View>
   );
 }
@@ -62,22 +64,22 @@ function PhaseView(props: {
   discard: () => void;
 }) {
   const { state, status, error, settling } = props;
-  if (settling) return <Text className="text-center text-[17px]">Measuring…</Text>;
+  if (settling) return <Text className="text-center text-[17px] text-neutral-900 dark:text-neutral-100">Measuring…</Text>;
   switch (state.phase) {
     case "idle":
-      return <Text className="text-center text-[17px]">{status === "error" && error ? `${STATUS_TEXT.error}: ${error}` : STATUS_TEXT[status]}</Text>;
+      return <Text className="text-center text-[17px] text-neutral-900 dark:text-neutral-100">{status === "error" && error ? `${STATUS_TEXT.error}: ${error}` : STATUS_TEXT[status]}</Text>;
     case "measuring":
-      return <Text className="text-center text-[17px]">Stay barefoot on the scale for body composition…</Text>;
+      return <Text className="text-center text-[17px] text-neutral-900 dark:text-neutral-100">Stay barefoot on the scale for body composition…</Text>;
     case "sending":
-      return <Text className="text-center text-[17px]">Sending to Home Assistant…</Text>;
+      return <Text className="text-center text-[17px] text-neutral-900 dark:text-neutral-100">Sending to Home Assistant…</Text>;
     case "saved":
-      return <Text className="text-center text-[17px] text-green-700">Saved to Home Assistant ✓</Text>;
+      return <Text className="text-center text-[17px] text-green-700 dark:text-green-400">Saved to Home Assistant ✓</Text>;
     case "discarded":
-      return <Text className="text-center text-[17px]">Not saved</Text>;
+      return <Text className="text-center text-[17px] text-neutral-900 dark:text-neutral-100">Not saved</Text>;
     case "error":
       return (
         <View className="items-center gap-3">
-          <Text className="text-center text-[17px] text-red-600">{`Couldn't save: ${state.message}`}</Text>
+          <Text className="text-center text-[17px] text-red-600 dark:text-red-400">{`Couldn't save: ${state.message}`}</Text>
           <Button title="Try again" onPress={props.confirm} />
         </View>
       );
@@ -91,7 +93,7 @@ function PhaseView(props: {
             : "This is far from your last weight. Save it as yours?";
       return (
         <View className="items-center gap-3">
-          <Text className="text-center text-[17px]">{question}</Text>
+          <Text className="text-center text-[17px] text-neutral-900 dark:text-neutral-100">{question}</Text>
           <View className="flex-row gap-3">
             <Button title="Save as mine" onPress={props.confirm} />
             <Button title="Not me" onPress={props.discard} secondary />
@@ -117,22 +119,22 @@ function MetricsTable({ metrics, impedance }: { metrics: Metrics; impedance: num
   return (
     <View className="mt-4 self-stretch">
       {ROWS.filter(([k]) => metrics[k] != null).map(([k, label, unit]) => (
-        <View key={k} className="flex-row justify-between border-b border-neutral-200 py-2">
-          <Text className="text-base text-neutral-600">{label}</Text>
-          <Text className="text-base font-semibold">
+        <View key={k} className="flex-row justify-between border-b border-neutral-200 py-2 dark:border-neutral-800">
+          <Text className="text-base text-neutral-600 dark:text-neutral-400">{label}</Text>
+          <Text className="text-base font-semibold text-neutral-900 dark:text-neutral-100">
             {metrics[k]} {unit}
           </Text>
         </View>
       ))}
-      {!impedance && <Text className="mt-2 text-center text-neutral-500">No impedance: body composition needs bare feet.</Text>}
+      {!impedance && <Text className="mt-2 text-center text-neutral-500 dark:text-neutral-400">No impedance: body composition needs bare feet.</Text>}
     </View>
   );
 }
 
 function Button({ title, onPress, secondary }: { title: string; onPress: () => void; secondary?: boolean }) {
   return (
-    <Pressable onPress={onPress} className={`rounded-lg px-5 py-3 ${secondary ? "bg-neutral-200" : "bg-[#0a66c2]"}`}>
-      <Text className={`text-base font-semibold ${secondary ? "text-neutral-800" : "text-white"}`}>{title}</Text>
+    <Pressable onPress={onPress} className={`rounded-lg px-5 py-3 ${secondary ? "bg-neutral-200 dark:bg-neutral-800" : "bg-[#0a66c2]"}`}>
+      <Text className={`text-base font-semibold ${secondary ? "text-neutral-800 dark:text-neutral-100" : "text-white"}`}>{title}</Text>
     </Pressable>
   );
 }

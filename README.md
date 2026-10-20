@@ -49,6 +49,9 @@ Every phone reads the same data, so they reach the same answer without talking t
 3. After the first weigh-in, the main screen shows the scale's address. Put it in
    Settings to ignore other scales nearby (optional).
 
+To pre-fill the HA URL on every phone, copy `.env.example` to `.env` and set
+`EXPO_PUBLIC_HA_URL` before building. It's read at build time, so rebuild after changing it.
+
 `mobile_app` must be loaded in HA; it is when `default_config:` is in your configuration.
 Plain `http://` URLs are allowed. Prefer the server's IP address to `homeassistant.local`,
 since not every Android version resolves `.local` names.
