@@ -5,7 +5,7 @@ over Bluetooth Low Energy and saves each weigh-in, with its body composition, to
 **Home Assistant**. The phone is the receiver, so the scale doesn't need to be near the
 HA server.
 
-It replaces [miscale-dashboard](../miscale-dashboard)'s server-side scanner; the packet
+It replaces [miscale-dashboard](https://github.com/BrOrlandi/miscale-dashboard)'s server-side scanner; the packet
 parser, weigh-in grouping and body composition formulas are ported from it.
 
 ## How it works
@@ -106,3 +106,9 @@ live in `app.json`.
 - **Background scanning**: today the app scans only while it's open. Next is an Android
   foreground service plus a "Was that you?" notification for unclear weigh-ins.
 - **Importing history** from miscale-dashboard's SQLite database into HA statistics.
+
+## License
+
+MIT. The packet parser, weigh-in grouping and body composition formulas are ported from
+[miscale-dashboard](https://github.com/BrOrlandi/miscale-dashboard) by Bruno Orlandi (MIT); see
+[LICENSE](LICENSE).
