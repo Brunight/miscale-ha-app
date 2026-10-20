@@ -1,5 +1,5 @@
 import { Link, Redirect, Stack } from "expo-router";
-import { ActivityIndicator, Pressable, StyleSheet, Text, View } from "react-native";
+import { ActivityIndicator, Pressable, Text, View } from "react-native";
 
 import { useScale, type ScanStatus } from "@/hooks/useScale";
 import { useSettings } from "@/hooks/useSettings";
@@ -10,7 +10,7 @@ import { isConfigured, type Settings } from "@/lib/settings";
 
 export default function Index() {
   const { settings, loaded } = useSettings();
-  if (!loaded) return <ActivityIndicator style={styles.center} />;
+  if (!loaded) return <ActivityIndicator className="flex-1" />;
   if (!isConfigured(settings)) return <Redirect href="/settings" />;
   return <Weigh settings={settings} />;
 }
@@ -32,21 +32,23 @@ function Weigh({ settings }: { settings: Settings & { registration: Registration
   const weight = settling ? live.weightKg : "m" in state ? state.m.weightKg : null;
 
   return (
-    <View style={styles.container}>
+    <View className="flex-1 items-center gap-3 bg-white p-6">
       <Stack.Screen
         options={{
           headerRight: () => (
-            <Link href="/settings" style={styles.link}>
-              Settings
+            <Link href="/settings" asChild>
+              <Pressable>
+                <Text className="text-base text-[#0a66c2]">Settings</Text>
+              </Pressable>
             </Link>
           ),
         }}
       />
-      <Text style={styles.hello}>{settings.name}</Text>
-      <Text style={[styles.weight, settling && styles.settling]}>{weight != null ? `${weight.toFixed(1)} kg` : "–"}</Text>
+      <Text className="text-lg text-neutral-600">{settings.name}</Text>
+      <Text className={`text-7xl font-bold tabular-nums ${settling ? "text-neutral-400" : ""}`}>{weight != null ? `${weight.toFixed(1)} kg` : "–"}</Text>
       <PhaseView state={state} status={status} error={error} settling={Boolean(settling)} confirm={confirm} discard={discard} />
       {"metrics" in state && <MetricsTable metrics={state.metrics} impedance={state.m.impedance} />}
-      {live && !settings.scaleAddress && <Text style={styles.note}>Scale address: {live.address}</Text>}
+      {live && !settings.scaleAddress && <Text className="mt-2 text-center text-neutral-500">Scale address: {live.address}</Text>}
     </View>
   );
 }
@@ -60,22 +62,22 @@ function PhaseView(props: {
   discard: () => void;
 }) {
   const { state, status, error, settling } = props;
-  if (settling) return <Text style={styles.message}>Measuring…</Text>;
+  if (settling) return <Text className="text-center text-[17px]">Measuring…</Text>;
   switch (state.phase) {
     case "idle":
-      return <Text style={styles.message}>{status === "error" && error ? `${STATUS_TEXT.error}: ${error}` : STATUS_TEXT[status]}</Text>;
+      return <Text className="text-center text-[17px]">{status === "error" && error ? `${STATUS_TEXT.error}: ${error}` : STATUS_TEXT[status]}</Text>;
     case "measuring":
-      return <Text style={styles.message}>Stay barefoot on the scale for body composition…</Text>;
+      return <Text className="text-center text-[17px]">Stay barefoot on the scale for body composition…</Text>;
     case "sending":
-      return <Text style={styles.message}>Sending to Home Assistant…</Text>;
+      return <Text className="text-center text-[17px]">Sending to Home Assistant…</Text>;
     case "saved":
-      return <Text style={[styles.message, styles.ok]}>Saved to Home Assistant ✓</Text>;
+      return <Text className="text-center text-[17px] text-green-700">Saved to Home Assistant ✓</Text>;
     case "discarded":
-      return <Text style={styles.message}>Not saved</Text>;
+      return <Text className="text-center text-[17px]">Not saved</Text>;
     case "error":
       return (
-        <View style={styles.ask}>
-          <Text style={[styles.message, styles.bad]}>{`Couldn't save: ${state.message}`}</Text>
+        <View className="items-center gap-3">
+          <Text className="text-center text-[17px] text-red-600">{`Couldn't save: ${state.message}`}</Text>
           <Button title="Try again" onPress={props.confirm} />
         </View>
       );
@@ -88,9 +90,9 @@ function PhaseView(props: {
             ? `This could also be ${d.rival.name}. Save it as yours?`
             : "This is far from your last weight. Save it as yours?";
       return (
-        <View style={styles.ask}>
-          <Text style={styles.message}>{question}</Text>
-          <View style={styles.row}>
+        <View className="items-center gap-3">
+          <Text className="text-center text-[17px]">{question}</Text>
+          <View className="flex-row gap-3">
             <Button title="Save as mine" onPress={props.confirm} />
             <Button title="Not me" onPress={props.discard} secondary />
           </View>
@@ -113,47 +115,24 @@ const ROWS: [keyof Metrics, string, string][] = [
 
 function MetricsTable({ metrics, impedance }: { metrics: Metrics; impedance: number | null }) {
   return (
-    <View style={styles.table}>
+    <View className="mt-4 self-stretch">
       {ROWS.filter(([k]) => metrics[k] != null).map(([k, label, unit]) => (
-        <View key={k} style={styles.tableRow}>
-          <Text style={styles.label}>{label}</Text>
-          <Text style={styles.value}>
+        <View key={k} className="flex-row justify-between border-b border-neutral-200 py-2">
+          <Text className="text-base text-neutral-600">{label}</Text>
+          <Text className="text-base font-semibold">
             {metrics[k]} {unit}
           </Text>
         </View>
       ))}
-      {!impedance && <Text style={styles.note}>No impedance: body composition needs bare feet.</Text>}
+      {!impedance && <Text className="mt-2 text-center text-neutral-500">No impedance: body composition needs bare feet.</Text>}
     </View>
   );
 }
 
 function Button({ title, onPress, secondary }: { title: string; onPress: () => void; secondary?: boolean }) {
   return (
-    <Pressable onPress={onPress} style={[styles.button, secondary && styles.buttonSecondary]}>
-      <Text style={[styles.buttonText, secondary && styles.buttonTextSecondary]}>{title}</Text>
+    <Pressable onPress={onPress} className={`rounded-lg px-5 py-3 ${secondary ? "bg-neutral-200" : "bg-[#0a66c2]"}`}>
+      <Text className={`text-base font-semibold ${secondary ? "text-neutral-800" : "text-white"}`}>{title}</Text>
     </Pressable>
   );
 }
-
-const styles = StyleSheet.create({
-  center: { flex: 1 },
-  container: { flex: 1, alignItems: "center", padding: 24, gap: 12, backgroundColor: "#fff" },
-  link: { color: "#0a66c2", fontSize: 16 },
-  hello: { fontSize: 18, color: "#555" },
-  weight: { fontSize: 72, fontWeight: "700", fontVariant: ["tabular-nums"] },
-  settling: { color: "#999" },
-  message: { fontSize: 17, textAlign: "center" },
-  ok: { color: "#1a7f37" },
-  bad: { color: "#cf222e" },
-  ask: { alignItems: "center", gap: 12 },
-  row: { flexDirection: "row", gap: 12 },
-  button: { backgroundColor: "#0a66c2", paddingVertical: 12, paddingHorizontal: 20, borderRadius: 8 },
-  buttonSecondary: { backgroundColor: "#eee" },
-  buttonText: { color: "#fff", fontSize: 16, fontWeight: "600" },
-  buttonTextSecondary: { color: "#222" },
-  table: { alignSelf: "stretch", marginTop: 16 },
-  tableRow: { flexDirection: "row", justifyContent: "space-between", paddingVertical: 8, borderBottomWidth: 1, borderColor: "#eee" },
-  label: { fontSize: 16, color: "#555" },
-  value: { fontSize: 16, fontWeight: "600" },
-  note: { marginTop: 8, color: "#777", textAlign: "center" },
-});

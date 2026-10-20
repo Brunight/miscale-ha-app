@@ -2,7 +2,7 @@ import * as Application from "expo-application";
 import * as Device from "expo-device";
 import { router } from "expo-router";
 import { useState } from "react";
-import { Pressable, ScrollView, StyleSheet, Switch, Text, TextInput, View } from "react-native";
+import { Pressable, ScrollView, Switch, Text, TextInput, View } from "react-native";
 
 import { useSettings } from "@/hooks/useSettings";
 import { HomeAssistant, isGone, normalizeUrl } from "@/lib/ha";
@@ -81,8 +81,8 @@ export default function SettingsScreen() {
   }
 
   return (
-    <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
-      <Text style={styles.section}>Home Assistant</Text>
+    <ScrollView contentContainerClassName="gap-3 bg-white p-5" keyboardShouldPersistTaps="handled">
+      <Text className="mt-2 text-xl font-bold">Home Assistant</Text>
       <Field label="URL" value={form.haUrl} onChange={(v) => set("haUrl", v)} placeholder="http://homeassistant.local:8123" url />
       <Field
         label="Long-lived access token"
@@ -92,16 +92,16 @@ export default function SettingsScreen() {
         secret
       />
 
-      <Text style={styles.section}>You</Text>
+      <Text className="mt-2 text-xl font-bold">You</Text>
       <Field label="Name" value={form.name} onChange={(v) => set("name", v)} />
       <Field label="Height (cm)" value={height} onChange={setHeight} numeric />
       <Field label="Birth date" value={form.birth} onChange={(v) => set("birth", v)} placeholder="1990-01-31" />
-      <View style={styles.switchRow}>
-        <Text style={styles.label}>Sex for the formulas: {form.male ? "male" : "female"}</Text>
+      <View className="flex-row items-center justify-between">
+        <Text className="text-[15px] text-neutral-700">Sex for the formulas: {form.male ? "male" : "female"}</Text>
         <Switch value={form.male} onValueChange={(v) => set("male", v)} />
       </View>
 
-      <Text style={styles.section}>Scale</Text>
+      <Text className="mt-2 text-xl font-bold">Scale</Text>
       <Field
         label="Scale address (optional)"
         hint="Only accept this scale. Shown on the main screen after a weigh-in."
@@ -117,9 +117,9 @@ export default function SettingsScreen() {
         numeric
       />
 
-      {message && <Text style={styles.message}>{message}</Text>}
-      <Pressable onPress={onSave} disabled={busy} style={[styles.button, busy && styles.disabled]}>
-        <Text style={styles.buttonText}>{busy ? "Connecting…" : "Save"}</Text>
+      {message && <Text className="text-[15px] text-red-600">{message}</Text>}
+      <Pressable onPress={onSave} disabled={busy} className={`mt-2 items-center rounded-lg bg-[#0a66c2] p-3.5 ${busy ? "opacity-60" : ""}`}>
+        <Text className="text-[17px] font-semibold text-white">{busy ? "Connecting…" : "Save"}</Text>
       </Pressable>
     </ScrollView>
   );
@@ -136,10 +136,10 @@ function Field(props: {
   url?: boolean;
 }) {
   return (
-    <View style={styles.field}>
-      <Text style={styles.label}>{props.label}</Text>
+    <View className="gap-1">
+      <Text className="text-[15px] text-neutral-700">{props.label}</Text>
       <TextInput
-        style={styles.input}
+        className="rounded-lg border border-neutral-300 px-3 py-2.5 text-base"
         value={props.value}
         onChangeText={props.onChange}
         placeholder={props.placeholder}
@@ -148,21 +148,7 @@ function Field(props: {
         autoCapitalize="none"
         autoCorrect={false}
       />
-      {props.hint && <Text style={styles.hint}>{props.hint}</Text>}
+      {props.hint && <Text className="text-[13px] text-neutral-500">{props.hint}</Text>}
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: { padding: 20, gap: 12, backgroundColor: "#fff" },
-  section: { fontSize: 20, fontWeight: "700", marginTop: 8 },
-  field: { gap: 4 },
-  label: { fontSize: 15, color: "#333" },
-  hint: { fontSize: 13, color: "#777" },
-  input: { borderWidth: 1, borderColor: "#ccc", borderRadius: 8, paddingHorizontal: 12, paddingVertical: 10, fontSize: 16 },
-  switchRow: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
-  message: { fontSize: 15, color: "#cf222e" },
-  button: { backgroundColor: "#0a66c2", padding: 14, borderRadius: 8, alignItems: "center", marginTop: 8 },
-  disabled: { opacity: 0.6 },
-  buttonText: { color: "#fff", fontSize: 17, fontWeight: "600" },
-});
