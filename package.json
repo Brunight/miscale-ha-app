@@ -32,7 +32,8 @@
     "android": "expo run:android",
     "test": "bun test",
     "typecheck": "tsc --noEmit",
-    "lint": "expo lint"
+    "lint": "expo lint",
+    "build:apk": "expo prebuild -p android --no-install && cd android && ./gradlew assembleRelease"
   },
   "private": true
 }
