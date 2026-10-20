@@ -39,3 +39,11 @@ Docs: https://docs.expo.dev/eas/index.md
 - If `ios/` and `android/` directories do not exist, they are generated (Continuous Native Generation). Never create or edit them by hand — configure native behavior in `app.json` and config plugins.
 - Expo Go only includes its bundled native modules. After adding a library with native code, the app needs a development build: `npx expo run:ios|android` locally, or `eas build --profile development`.
 - Prefer recommended Expo modules over third-party libraries, and check your available skills before adding dependencies. Docs: https://docs.expo.dev/versions/latest/index.md
+
+## This project
+
+Android-only app that relays Xiaomi Mi Body Composition Scale 2 BLE advertisements to Home Assistant through the mobile_app webhook API. See README.md for the design.
+
+- Pure logic lives in `src/lib/` and must stay free of React Native imports so `bun test` can run it.
+- `src/lib/packet.ts`, `session.ts` and `body.ts` are ports of `app/scale.py`, `app/session.py` and `app/body.py` from miscale-dashboard; keep them behaviorally identical (tests/body.test.ts holds reference outputs from the Python version).
+- Before declaring a task done: `bun test`, `bun run typecheck`, `bun run lint`.
