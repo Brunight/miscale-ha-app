@@ -72,10 +72,13 @@ const weightAttributes = (person: string, deviceId: string) => ({
   miscale_device: deviceId,
 });
 
+/** A fixed long-lived token, or a function returning a fresh access token (see auth.ts). */
+export type Credential = string | (() => Promise<string>);
+
 export class HomeAssistant {
   constructor(
     readonly baseUrl: string,
-    private token: string,
+    private token: Credential,
     private fetchFn: Fetch = (url, init) => fetch(url, init),
   ) {
     this.baseUrl = normalizeUrl(baseUrl);
@@ -83,12 +86,12 @@ export class HomeAssistant {
 
   private async request(url: string, init: RequestInit, auth: boolean): Promise<unknown> {
     const headers: Record<string, string> = { "Content-Type": "application/json" };
-    if (auth) headers.Authorization = `Bearer ${this.token}`;
+    if (auth) headers.Authorization = `Bearer ${typeof this.token === "string" ? this.token : await this.token()}`;
     const res = await this.fetchFn(url, { ...init, headers });
     if (!res.ok) {
       const hint =
         res.status === 401
-          ? "the access token was refused"
+          ? "Home Assistant refused the login or token"
           : res.status === 404 && url.includes("mobile_app")
             ? "the mobile_app integration isn't loaded (add default_config or mobile_app)"
             : res.status === 410

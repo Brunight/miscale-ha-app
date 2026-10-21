@@ -6,7 +6,9 @@ import { DEFAULT_TOLERANCE_KG } from "./identify";
 
 export type Settings = {
   haUrl: string;
-  /** Long-lived access token of this person's own HA user. */
+  /** HA login (auth.ts): the refresh token of this person's own HA user. */
+  refreshToken: string | null;
+  /** Or a long-lived access token pasted by hand (Settings › Advanced). Used when there's no login. */
   token: string;
   name: string;
   heightCm: number;
@@ -27,6 +29,7 @@ export function emptySettings(): Settings {
   return {
     // Set EXPO_PUBLIC_HA_URL in .env to pre-fill it (read at build time).
     haUrl: process.env.EXPO_PUBLIC_HA_URL ?? "",
+    refreshToken: null,
     token: "",
     name: "",
     heightCm: 170,

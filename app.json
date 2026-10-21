@@ -34,7 +34,8 @@
             "usesCleartextTraffic": true
           }
         }
-      ]
+      ],
+      "expo-web-browser"
     ],
     "scheme": "miscale",
     "platforms": [

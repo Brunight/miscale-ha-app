@@ -98,5 +98,5 @@ test("errors explain the common causes", async () => {
   const { fn } = fakeFetch(() => ({ status: 401 }));
   const err = await new HomeAssistant("http://ha", "bad", fn).ping().catch((e) => e);
   expect(err).toBeInstanceOf(HAError);
-  expect(err.message).toBe("the access token was refused");
+  expect(err.message).toBe("Home Assistant refused the login or token");
 });

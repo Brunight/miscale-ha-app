@@ -42,18 +42,30 @@ Every phone reads the same data, so they reach the same answer without talking t
 
 ## Setup
 
-1. In HA, open your profile › Security › **Long-lived access tokens** and create one. Each
-   person uses a token from their own HA user.
-2. Install the app, open Settings and fill in the HA URL, the token, your name, height,
-   birth date and sex (the body composition formulas need them).
-3. After the first weigh-in, the main screen shows the scale's address. Put it in
+1. Install the app and open Settings. The HA URL is pre-filled from `EXPO_PUBLIC_HA_URL`
+   (see [Releasing](#releasing)); otherwise tap **Find on this network** and pick your
+   Home Assistant, or type its URL.
+2. Tap **Log in to Home Assistant** and sign in on HA's own login page with **your own HA
+   user**. No token to create or paste.
+3. Fill in your name, height, birth date and sex (the body composition formulas need them)
+   and save.
+4. After the first weigh-in, the main screen shows the scale's address. Put it in
    Settings to ignore other scales nearby (optional).
 
-The HA URL is pre-filled from `EXPO_PUBLIC_HA_URL` (see [Releasing](#releasing)).
+Notes:
 
-`mobile_app` must be loaded in HA; it is when `default_config:` is in your configuration.
-Plain `http://` URLs are allowed. Prefer the server's IP address to `homeassistant.local`,
-since not every Android version resolves `.local` names.
+- The login works like the Companion app's: HA gives the app a refresh token, listed in
+  your HA profile under **Refresh tokens**, where you can revoke it. **Log out** in the app
+  revokes it too.
+- HA identifies the app by `https://brunight.github.io/miscale-ha-app/`
+  ([docs/index.html](docs/index.html), served by GitHub Pages), which declares the
+  `miscale://auth` redirect. HA fetches that page while you log in, so **the HA server needs
+  internet access**. If it doesn't have it, use **Use a long-lived token instead** in
+  Settings and paste a token from your HA profile › Security.
+- `mobile_app` must be loaded in HA; it is when `default_config:` is in your configuration.
+- Plain `http://` URLs are allowed. Prefer the server's IP address to `homeassistant.local`,
+  since not every Android version resolves `.local` names; **Find on this network** already
+  picks the IP address.
 
 ## Development
 
@@ -97,6 +109,8 @@ live in `app.json`.
 | `src/lib/body.ts` | Body composition formulas (openScale), identical to the dashboard's |
 | `src/lib/identify.ts` | Decides whether a weigh-in is this phone's owner's |
 | `src/lib/ha.ts` | mobile_app registration, sensor updates, household weights |
+| `src/lib/auth.ts` | HA login (OAuth2 with PKCE), token refresh, log out |
+| `src/lib/discovery.ts` | Picks the URL of a Home Assistant found with mDNS |
 | `src/hooks/useScale.ts` | BLE permissions and scanning |
 | `src/hooks/useWeighIn.ts` | Wait for impedance → identify → send or ask |
 | `src/app/` | Screens: weigh-in (`index.tsx`) and settings |

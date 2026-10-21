@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import { compute, type Metrics } from "@/lib/body";
-import { HomeAssistant } from "@/lib/ha";
+import { haFor } from "@/lib/client";
 import { decide, type Decision, type Member } from "@/lib/identify";
 import type { Measurement, SessionEvent } from "@/lib/session";
 import type { Registration } from "@/lib/ha";
@@ -29,7 +29,7 @@ export function useWeighIn(settings: Settings & { registration: Registration }) 
   // The measurement being handled, and whether it has been sent as this person's.
   const current = useRef<{ m: Measurement; finalized: boolean; sent: boolean } | null>(null);
 
-  const ha = new HomeAssistant(settings.haUrl, settings.token);
+  const ha = haFor(settings);
   const metricsFor = (m: Measurement) =>
     compute(m.weightKg, m.impedance, settings.heightCm, settings.birth, settings.male, localDay(m.measuredAt));
 
